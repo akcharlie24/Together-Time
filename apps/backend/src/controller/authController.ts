@@ -2,16 +2,13 @@ import { comparePass, hashPass } from "@/helper/hashing";
 import prisma from "@repo/db";
 import { SignUpSchema, SignInSchema } from "@repo/types";
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-interface Payload {
+interface Payload extends JwtPayload {
   userId: string;
-  role: "Admin" | "User";
 }
 
 export async function signUpUser(req: Request, res: Response): Promise<void> {
-  // TODO: should do the complete requests in try catch and make a error handler middleware
-
   try {
     const parsedData = SignUpSchema.safeParse(req.body);
 
@@ -19,16 +16,18 @@ export async function signUpUser(req: Request, res: Response): Promise<void> {
       throw new Error(parsedData.error.issues[0]?.message);
     }
 
-    const userExists = await prisma.user.findUnique({
+    const userExists = await prisma.user.findFirst({
       where: {
-        username: parsedData.data?.username,
+        OR: [
+          { username: parsedData.data.username },
+          { email: parsedData.data.email },
+        ],
       },
     });
 
     if (userExists) {
-      throw new Error(
-        "Username Alerady Exists, either login or pick a different username",
-      );
+      res.status(409).json({ message: "Username or email alerady exists" });
+      return;
     }
 
     const hashedPassword = await hashPass(parsedData.data.password);
@@ -37,29 +36,26 @@ export async function signUpUser(req: Request, res: Response): Promise<void> {
       data: {
         username: parsedData.data.username,
         password: hashedPassword,
-        role: parsedData.data.type === "admin" ? "Admin" : "User",
+        email: parsedData.data.email,
       },
     });
 
     if (!newUser) {
-      throw new Error("Error Creating User");
+      throw new Error("Error Creating User, please try again");
     }
 
-    res.status(200).json({
-      message: "User Created Successfully",
+    res.status(201).json({
+      message: "User successfully registered",
       userId: newUser.id,
     });
   } catch (e: any) {
-    // TODO: better error handling via express error handlers
-    res
-      .status(400)
-      .json({ message: "Bad Request, Invalid Credentials", error: e.message });
+    res.status(400).json({ message: "Validation errors", error: e.message });
+    return;
   }
 }
 
-export async function signInUser(req: Request, res: Response): Promise<void> {
-  //@ts-ignore
-  const JWT_SECRET: string = process.env.JWT_SECRET;
+export async function loginUser(req: Request, res: Response): Promise<void> {
+  const JWT_SECRET = process.env.JWT_SECRET as string;
 
   try {
     const parsedData = SignInSchema.safeParse(req.body);
@@ -70,12 +66,12 @@ export async function signInUser(req: Request, res: Response): Promise<void> {
 
     const user = await prisma.user.findUnique({
       where: {
-        username: parsedData.data?.username,
+        email: parsedData.data.email,
       },
     });
 
     if (!user) {
-      res.status(403).json({ message: "User Doesn't Exists" });
+      res.status(403).json({ message: "User doesnt exist" });
       return;
     }
 
@@ -91,15 +87,24 @@ export async function signInUser(req: Request, res: Response): Promise<void> {
 
     const payload: Payload = {
       userId: user.id,
-      role: user.role,
     };
 
-    // TODO: customize jwt
     const authToken: string = jwt.sign(payload, JWT_SECRET);
+
+    res.cookie("Authentication", authToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
 
     res.status(200).json({
       message: "Successfully Logged In",
-      token: authToken,
+      access_token: authToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
     });
   } catch (e: any) {
     res

@@ -5,20 +5,15 @@ export const SignUpSchema = z.object({
     .string()
     .min(3, { message: "Username should atleast be 3 characters" }),
 
-  // TODO: can add password criteria later on
   password: z
     .string()
     .min(6, { message: "Password should atleast be 6 characters" }),
 
-  type: z.enum(["user", "admin"], {
-    message: "Invalid role",
-  }),
+  email: z.string().min(1).email({ message: "Please enter a correct email" }),
 });
 
 export const SignInSchema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username should atleast be 3 characters" }),
+  email: z.string().min(1).email({ message: "Please enter a correct email" }),
 
   password: z
     .string()

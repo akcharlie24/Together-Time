@@ -5,14 +5,12 @@ declare global {
   namespace Express {
     interface Request {
       userId?: string;
-      role?: "Admin" | "User";
     }
   }
 }
 
 interface Payload extends DefaultJwtPayload {
   userId: string;
-  role: "Admin" | "User";
 }
 
 export function authMiddleware(
@@ -23,54 +21,23 @@ export function authMiddleware(
   try {
     const JWT_SECRET: string = process.env.JWT_SECRET!;
 
-    if (!req.headers.authorization) {
-      res.status(403).json({ message: "Auth Token Missing" });
+    if (!req.cookies.Authorization) {
+      res.status(403).json({ message: "Auth Token Missing, no cookie sent" });
       return;
     }
 
-    const authToken: string = req.headers.authorization.split(" ")[1]!;
+    const authToken = req.cookies.Authorization as string;
 
-    //@ts-ignore
-    const data: Payload = jwt.verify(authToken, JWT_SECRET);
+    const data = jwt.verify(authToken, JWT_SECRET) as Payload;
+
+    if (!data) {
+      throw new Error("Corrupted Payload in JWT");
+    }
 
     req.userId = data.userId;
     next();
   } catch (e: any) {
     res.status(403).json({ message: "Access Denied", error: e.message });
-  }
-}
-
-export function authAdminMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
-  try {
-    const JWT_SECRET: string = process.env.JWT_SECRET!;
-
-    if (!req.headers.authorization) {
-      // TODO: technically this one should be 401
-
-      res.status(403).json({ message: "Auth Token Missing" });
-      return;
-    }
-
-    const authToken: string = req.headers.authorization.split(" ")[1]!;
-
-    //@ts-ignore
-    const data: Payload = jwt.verify(authToken, JWT_SECRET);
-
-    if (data.role !== "Admin") {
-      res
-        .status(403)
-        .json({ message: "Access Denied, Please SignUp as Admin" });
-
-      return;
-    } else {
-      req.userId = data.userId;
-      next();
-    }
-  } catch (e: any) {
-    res.status(403).json({ message: "Access Denied", error: e.message });
+    return;
   }
 }
