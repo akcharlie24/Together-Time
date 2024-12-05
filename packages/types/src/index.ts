@@ -19,3 +19,14 @@ export const SignInSchema = z.object({
     .string()
     .min(6, { message: "Password should atleast be 6 characters" }),
 });
+
+export const CreateChannelSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "Enter a valid name of atleast 2 characters" }),
+
+  // TODO: can change to required as per requiremenets later on
+  description: z.string().optional(),
+
+  slug: z.string().min(3, { message: "Slug should atleast be 3 characters" }),
+});

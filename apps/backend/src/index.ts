@@ -10,12 +10,18 @@ const app = express();
 const HTTP_PORT = process.env.HTTP_PORT;
 
 app.use(express.json());
+
 app.use(
   cors({
-    origin: "http://localhost:5371",
+    // TODO: change while productionising
+    origin: process.env.FRONTEND_URL,
     credentials: true,
+    // methods
+    // allowedHeaders
   }),
 );
+
+// TODO: can add signed cookies later on (learn about em)
 app.use(cookieParser());
 
 app.get("/", (_req, res: Response) => {

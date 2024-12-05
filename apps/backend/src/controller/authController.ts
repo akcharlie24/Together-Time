@@ -93,8 +93,9 @@ export async function loginUser(req: Request, res: Response): Promise<void> {
 
     res.cookie("Authentication", authToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      // TODO: can set expiration later on
     });
 
     res.status(200).json({

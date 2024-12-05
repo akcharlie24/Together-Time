@@ -21,12 +21,12 @@ export function authMiddleware(
   try {
     const JWT_SECRET: string = process.env.JWT_SECRET!;
 
-    if (!req.cookies.Authorization) {
-      res.status(403).json({ message: "Auth Token Missing, no cookie sent" });
+    if (!req.cookies.Authentication) {
+      res.status(403).json({ message: "Auth Token Missing, No cookie sent" });
       return;
     }
 
-    const authToken = req.cookies.Authorization as string;
+    const authToken = req.cookies.Authentication;
 
     const data = jwt.verify(authToken, JWT_SECRET) as Payload;
 
