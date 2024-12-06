@@ -21,7 +21,7 @@ app.use(
   }),
 );
 
-// TODO: can add signed cookies later on (learn about em)
+// TODO: can add signed cookies later on
 app.use(cookieParser());
 
 app.get("/", (_req, res: Response) => {

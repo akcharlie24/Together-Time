@@ -25,7 +25,7 @@ export const CreateChannelSchema = z.object({
     .string()
     .min(2, { message: "Enter a valid name of atleast 2 characters" }),
 
-  // TODO: can change to required as per requiremenets later on
+  // TODO: can change to REQUIRED as per requiremenets later on
   description: z.string().optional(),
 
   slug: z.string().min(3, { message: "Slug should atleast be 3 characters" }),
