@@ -1,23 +1,16 @@
 {
   "name": "@repo/db",
-  "main": "./dist/index.js",
+  "main": "index.js",
   "version": "0.0.0",
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push --skip-generate",
-    "build": "tsup",
-    "clean": "rm -rf dist"
+    "db:generate": "prisma generate"
   },
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+    "./prisma": "./src/index.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.20.0"
+    "@prisma/client": "^5.20.0",
+    "prisma": "^6.0.1"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +19,6 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.9.0",
-    "prisma": "^6.0.1",
     "tsup": "^8.0.2",
     "typescript": "5.2.2"
   }

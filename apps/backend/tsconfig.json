@@ -5,7 +5,7 @@
     "paths": {
       "@/*": ["*"]
     },
-    "module": "NodeNext",
+    "rootDir": "./src",
     "outDir": "./dist"
   },
   "exclude": ["node_modules"],

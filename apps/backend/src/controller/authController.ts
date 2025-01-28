@@ -1,6 +1,6 @@
 import { comparePass, hashPass } from "@/helper/hashing";
-import prisma from "@repo/db";
-import { SignUpSchema, SignInSchema } from "@repo/types";
+import prisma from "@repo/db/prisma";
+import { SignUpSchema, SignInSchema } from "@repo/types/common-types";
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
